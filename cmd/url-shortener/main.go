@@ -22,9 +22,8 @@ func main() {
 	_ = logger
 
 	db, err := sqlite.New(cfg.StoragePath)
-
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("failed while initializing storage")
 	}
 	_ = db
 

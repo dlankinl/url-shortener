@@ -85,3 +85,19 @@ func (s *Storage) GetURL(alias string) (string, error) {
 
 	return urlToFind, nil
 }
+
+func (s *Storage) DeleteAlias(alias string, username string) error {
+	const fn = "storage.sqlite.DeleteAlias"
+
+	query, err := s.db.Prepare("DELETE FROM url WHERE alias = ? AND user = ?")
+	if err != nil {
+		return fmt.Errorf("%s while prepairing: %w", fn, err)
+	}
+
+	_, err = query.Exec(alias, username)
+	if err != nil {
+		return fmt.Errorf("%s while executing: %w", fn, err)
+	}
+
+	return nil
+}
