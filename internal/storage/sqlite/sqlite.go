@@ -26,7 +26,7 @@ func New(storagePath string) (*Storage, error) {
 	    id INTEGER PRIMARY KEY,
 	    alias TEXT NOT NULL UNIQUE,
 	    url TEXT NOT NULL,
-	    user TEXT NOT NULL);
+	    username TEXT NOT NULL);
 	CREATE INDEX IF NOT EXISTS idx_alias ON url(alias);`)
 
 	if err != nil {
@@ -42,10 +42,10 @@ func New(storagePath string) (*Storage, error) {
 	return &Storage{db: db}, nil
 }
 
-func (s *Storage) SaveURL(alias string, urlToSave string, user string) (int64, error) {
+func (s *Storage) SaveURL(alias, urlToSave, user string) (int64, error) {
 	const fn = "storage.sqlite.SaveURL"
 
-	query, err := s.db.Prepare("INSERT INTO url(url, alias, user) VALUES(?, ?, ?)")
+	query, err := s.db.Prepare("INSERT INTO url(url, alias, username) VALUES(?, ?, ?)")
 	if err != nil {
 		return 0, fmt.Errorf("%s while prepairing: %w", fn, err)
 	}
@@ -86,15 +86,17 @@ func (s *Storage) GetURL(alias string) (string, error) {
 	return urlToFind, nil
 }
 
-func (s *Storage) DeleteAlias(alias string, username string) error {
+func (s *Storage) DeleteAlias(alias, user string) error {
 	const fn = "storage.sqlite.DeleteAlias"
 
-	query, err := s.db.Prepare("DELETE FROM url WHERE alias = ? AND user = ?")
+	fmt.Printf("-------\nalias = %s;    username = %s\n--------", alias, user)
+
+	query, err := s.db.Prepare("DELETE FROM url WHERE alias = ? AND username = ?")
 	if err != nil {
 		return fmt.Errorf("%s while prepairing: %w", fn, err)
 	}
 
-	_, err = query.Exec(alias, username)
+	_, err = query.Exec(alias, user)
 	if err != nil {
 		return fmt.Errorf("%s while executing: %w", fn, err)
 	}

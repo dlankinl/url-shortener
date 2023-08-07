@@ -7,8 +7,12 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/go-chi/render"
 	"golang.org/x/exp/slog"
+	"net/http"
 	"os"
 	"url-shortener/internal/config"
+	del "url-shortener/internal/http-server/handlers/url/delete"
+	"url-shortener/internal/http-server/handlers/url/redirect"
+	"url-shortener/internal/http-server/handlers/url/save"
 	mwLog "url-shortener/internal/http-server/middleware/logger"
 	"url-shortener/internal/storage/sqlite"
 )
@@ -40,9 +44,22 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(mwLog.New(logger))
 
-	// TODO: init router
+	router.Post("/", save.New(logger, db))
+	router.Get("/{alias}", redirect.New(logger, db))
+	router.Post("/del", del.New(logger, db))
 
-	// TODO: run server
+	srv := &http.Server{
+		Handler:      router,
+		Addr:         cfg.Address,
+		ReadTimeout:  cfg.Timeout,
+		WriteTimeout: cfg.Timeout,
+		IdleTimeout:  cfg.IdleTimeout,
+	}
+
+	if err := srv.ListenAndServe(); err != nil {
+		logger.Error("failed to run a server")
+	}
+
 }
 
 func setupLogger(env string) *slog.Logger {

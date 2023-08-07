@@ -7,4 +7,5 @@ import (
 var (
 	ErrURLNotFound = errors.New("url not found")
 	ErrURLExists   = errors.New("url exists")
+	ErrWrongUser   = errors.New("wrong user")
 )
